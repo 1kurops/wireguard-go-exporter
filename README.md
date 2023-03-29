@@ -1,0 +1,1 @@
+# wireguard_go_exporter
