@@ -13,10 +13,10 @@ It collects data from the wg show command and exports it in the Prometheus forma
 This exporter exposes the following metrics:
 |metrics|description|
 |-------------------------|-------------------------|
-|wireguard_bytes_received:| Total number of bytes received.|
-|wireguard_bytes_sent:| Total number of bytes sent.|
-|wireguard_last_handshake:| UNIX timestamp seconds of the last handshake.|
-|wireguard_counter_config:| Configuration counter.|
+|`wireguard_bytes_received:`| Total number of bytes received.|
+|`wireguard_bytes_sent:`| Total number of bytes sent.|
+|`wireguard_last_handshake:`| UNIX timestamp seconds of the last handshake.|
+|`wireguard_counter_config:`| Configuration counter.|
 
 ## Installation
 
@@ -30,13 +30,13 @@ Before installing WireGuard Exporter, make sure the following dependencies are i
 
 To use this exporter, follow these steps:
 
-Clone the repository: `git clone https://github.com/1kurops/wireguard-go-exporter.git`
+1. Clone the repository: `git clone https://github.com/1kurops/wireguard-go-exporter.git`
 
-Navigate to the directory: `cd wireguard-exporter`
+2. Navigate to the directory: `cd wireguard-exporter`
 
-Compile the binary: `go build -o wireguard-exporter`
+3. Compile the binary: `go build -o wireguard-exporter`
 
-Run the binary: `./wireguard-exporter`
+4. Run the binary: `./wireguard-exporter`
 
 ### Contributing
 
