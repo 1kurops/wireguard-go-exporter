@@ -3,20 +3,19 @@
 ## This is a WireGuard exporter for Prometheus. It exposes metrics about the amount of data transmitted through WireGuard interfaces.
 Flags
 
-    `-a`: URL path for surfacing collected metrics. Default is /metrics.
+`-a`: URL path for surfacing collected metrics. Default is /metrics.
 
-    `-p`: Address for WireGuard exporter. Default is :9586.
+`-p`: Address for WireGuard exporter. Default is :9586.
 
-    `-c`: Path to file with name:key value. Default is /etc/wireguard/configs/clients.txt.
+`-c`: Path to file with name:key value. Default is /etc/wireguard/configs/clients.txt.
 ## Metrics
 
 This exporter exposes the following metrics:
 
-    ### wireguard_bytes_received: Total number of bytes received.
-    ### wireguard_bytes_sent: Total number of bytes sent.
-    ### wireguard_last_handshake: UNIX timestamp seconds of the last handshake.
-    ### wireguard_counter_config: Configuration counter.
-    ### 
+### wireguard_bytes_received: Total number of bytes received.
+### wireguard_bytes_sent: Total number of bytes sent.
+### wireguard_last_handshake: UNIX timestamp seconds of the last handshake.
+### wireguard_counter_config: Configuration counter.
 
 ## Installation
 
