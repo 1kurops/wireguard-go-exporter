@@ -21,6 +21,7 @@ if ! tar -C /usr/local -xzf ${GO_VERSION}.linux-amd64.tar.gz; then
 fi
 
 echo 'export PATH=$PATH:/usr/local/go/bin' >>~/.bashrc
+source ~/.bashrc
 go version
 mkdir /opt/goexporter/
 
