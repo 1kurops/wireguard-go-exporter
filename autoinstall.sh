@@ -29,8 +29,11 @@ git clone ${REPO_URL}
 cd wireguard-go-exporter
 
 sed -i "s|ru_wg0|${locate}_wg0|" main.go
-
+go mod init main.go
+go get github.com/prometheus/client_golang/prometheus
+go get github.com/prometheus/client_golang/prometheus/promhttp
 go build -o /opt/goexporter/wireguard-go-exporter .
+
 cd /opt/goexporter/
 {
     echo "[Unit]"
