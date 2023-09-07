@@ -7,7 +7,8 @@ It collects data from the wg show command and exports it in the Prometheus forma
 |----------------|----------------|----------------|
 |`-a`| URL path for surfacing collected metrics.| Default is /metrics.|
 |`-p`| Address for WireGuard exporter.| Default is :9586.|
-|`-c`| Path to file with name:key value.| Default is /etc/wireguard/configs/clients.txt.|
+|`-c`| Path to file with name:key value.| Default is /etc/wireguard/wg0.conf.|
+|`-i`| Wireguard interface | Default is wg0.|
 ## Metrics
 
 This exporter exposes the following metrics:
@@ -37,7 +38,3 @@ To use this exporter, follow these steps:
 3. Compile the binary: `go build -o wireguard-exporter`
 
 4. Run the binary: `./wireguard-exporter`
-
-### Contributing
-
-If you find a bug or have an idea for a new feature, please open an issue or submit a pull request. We welcome contributions from the community!

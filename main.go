@@ -21,9 +21,10 @@ const (
 )
 
 var (
-	addr    = flag.String("a", "/metrics", "URL path for surfacing collected metrics")
-	port    = flag.String("p", ":9586", "address for WireGuard exporter")
-	clients = flag.String("c", "/etc/wireguard/configs/clients.txt", "Path to file with name:key value")
+	addr      = flag.String("a", "/metrics", "URL path for surfacing collected metrics")
+	port      = flag.String("p", ":9586", "address for WireGuard exporter")
+	config    = flag.String("c", "/etc/wireguard/wg0.conf", "Path to main file config")
+	Interface = flag.String("i", "wg0", "Wireguard interface")
 )
 
 type collector struct {
@@ -72,7 +73,7 @@ func (c *collector) Describe(ch chan<- *prometheus.Desc) {
 
 func (c *collector) Collect(ch chan<- prometheus.Metric) {
 	flag.Parse()
-	file, err := os.Open(*clients)
+	file, err := os.Open(*config)
 	if err != nil {
 		panic(err)
 	}
@@ -80,17 +81,22 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 	keyToName := make(map[string]string)
 
 	scanner := bufio.NewScanner(file)
+	var currentBlock string
+	inBlock := false
+
 	for scanner.Scan() {
 		line := scanner.Text()
-		fields := strings.Fields(line)
-
-		key := fields[1]
-		user_name := fields[0]
-
-		keyToName[key] = user_name
-	}
-	if err := scanner.Err(); err != nil {
-		panic(err)
+		if strings.HasPrefix(line, "### begin ") && strings.HasSuffix(line, " ###") {
+			currentBlock = strings.TrimPrefix(line, "### begin ")
+			currentBlock = strings.TrimSuffix(currentBlock, " ###")
+			inBlock = true
+		} else if inBlock && strings.HasPrefix(line, "### end ") && strings.HasSuffix(line, " ###") {
+			inBlock = false
+			currentBlock = ""
+		} else if inBlock && strings.HasPrefix(line, "PublicKey = ") {
+			publicKey := strings.TrimPrefix(line, "PublicKey = ")
+			keyToName[publicKey] = currentBlock
+		}
 	}
 
 	cmd := exec.Command("wg", "show", "all", "dump")
@@ -136,7 +142,7 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(
 			c.lasthandshake,
 			prometheus.GaugeValue,
-			float64(lasthandshake),
+			lasthandshake,
 			interfaceName, publicKey, user_name,
 		)
 	}
@@ -144,7 +150,7 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 		c.counterconfig,
 		prometheus.GaugeValue,
 		float64(count),
-		"ru_wg0",
+		*Interface,
 	)
 }
 
@@ -157,7 +163,8 @@ func main() {
 	endpoint.Handle(*addr, promhttp.Handler())
 
 	log.Printf("starting WireGuard exporter on %q", *port, *addr)
-	log.Printf("clients path is :", *clients)
+	log.Printf("Config path is :", *config)
+	log.Printf("Interface exporting is :", *Interface)
 	s := &http.Server{
 		Addr:         *port,
 		Handler:      endpoint,
