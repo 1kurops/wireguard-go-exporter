@@ -105,7 +105,7 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 		}
 	}
 
-	cmd := exec.Command("wg", "show", "all", "dump")
+	cmd := exec.Command("wg", "show", *Interface, "dump")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error running command: %v\n", err)
