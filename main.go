@@ -27,6 +27,11 @@ var (
 	Interface = flag.String("i", "wg0", "Wireguard interface")
 )
 
+type peer struct {
+	peerName string
+	peerKey  string
+}
+
 type collector struct {
 	bytesReceived *prometheus.Desc
 	bytesSent     *prometheus.Desc
@@ -79,24 +84,42 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 	}
 	defer file.Close()
 	keyToName := make(map[string]string)
-
+	peerNames := make(map[string]*peer)
 	scanner := bufio.NewScanner(file)
-	var currentBlock string
+	// var currentBlock string
 	inBlock := false
-
+	pubKey := ""
+	peername := ""
 	for scanner.Scan() {
 		line := scanner.Text()
-		if strings.HasPrefix(line, "### begin ") && strings.HasSuffix(line, " ###") {
-			currentBlock = strings.TrimPrefix(line, "### begin ")
-			currentBlock = strings.TrimSuffix(currentBlock, " ###")
+		if strings.Contains(line, "[Peer]") && !inBlock {
+			log.Println("Found peer block ...")
 			inBlock = true
-		} else if inBlock && strings.HasPrefix(line, "### end ") && strings.HasSuffix(line, " ###") {
+		} else if strings.Contains(line, "AllowedIPs") {
+			log.Println("End of peer block")
 			inBlock = false
-			currentBlock = ""
-		} else if inBlock && strings.HasPrefix(line, "PublicKey = ") {
-			publicKey := strings.TrimPrefix(line, "PublicKey = ")
-			keyToName[publicKey] = currentBlock
+		} else if strings.Contains(line, "friendly_name") {
+			log.Println("Found peer name ", strings.Split(line, "=")[1])
+			peername = strings.Split(line, "=")[1]
+		} else if strings.Contains(line, "PublicKey") {
+			log.Println("Found public Key", strings.Split(line, "=")[1])
+			pubKey = strings.Split(line, "=")[1]
+			peerNames[pubKey] = &peer{peerName: peername, peerKey: pubKey}
 		}
+
+		// log.Println(line)
+		// if strings.HasPrefix(line, "### begin ") && strings.HasSuffix(line, " ###") {
+		// 	currentBlock = strings.TrimPrefix(line, "### begin ")
+		// 	currentBlock = strings.TrimSuffix(currentBlock, " ###")
+		// 	inBlock = true
+		// } else if inBlock && strings.HasPrefix(line, "### end ") && strings.HasSuffix(line, " ###") {
+		// 	inBlock = false
+		// 	currentBlock = ""
+		// } else if inBlock && strings.HasPrefix(line, "PublicKey = ") {
+		// 	publicKey := strings.TrimPrefix(line, "PublicKey = ")
+		// 	keyToName[publicKey] = currentBlock
+		// }
+		// log.Println(peerNames)
 	}
 
 	cmd := exec.Command("wg", "show", "all", "dump")
@@ -117,6 +140,7 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 		interfaceName := fields[0]
 		publicKey := fields[1]
 		lasthandshake, _ := strconv.ParseFloat(fields[5], 64)
+		log.Println(peerNames[publicKey])
 		user_name, ok := keyToName[publicKey]
 		if !ok {
 			fmt.Println("error user name", publicKey)
