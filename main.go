@@ -122,7 +122,11 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 		fields := strings.Fields(line)
 		interfaceName := fields[0]
 		publicKey := fields[1]
-		lasthandshake, _ := strconv.ParseFloat(fields[5], 64)
+		lasthandshake, err := strconv.ParseFloat(fields[5], 64)
+		if err != nil {
+			log.Println("Error parsing lasthandshake:", err)
+			lasthandshake = 0
+		}
 		user_name := peerNames[publicKey].peerName
 		log.Println("Checking key ", publicKey)
 		if user_name == "" {
@@ -131,9 +135,16 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 			log.Println("User for key: ", publicKey, " is ", user_name)
 		}
 
-		bytesReceived, _ := strconv.ParseFloat(fields[6], 64)
-		bytesSent, _ := strconv.ParseFloat(fields[7], 64)
-
+		bytesReceived, err := strconv.ParseFloat(fields[6], 64)
+		if err != nil {
+			log.Println("Error parsing bytes received:", err)
+			bytesReceived = 0
+		}
+		bytesSent, err := strconv.ParseFloat(fields[7], 64)
+		if err != nil {
+			log.Println("Error parsing bytes sent:", err)
+			bytesSent = 0
+		}
 		ch <- prometheus.MustNewConstMetric(
 			c.bytesReceived,
 			prometheus.CounterValue,
