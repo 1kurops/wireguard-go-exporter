@@ -95,6 +95,7 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 		} else if strings.Contains(line, "AllowedIPs") {
 			// log.Println("End of peer block")
 			inBlock = false
+			peername = ""
 		} else if strings.Contains(line, "friendly_name") {
 			// log.Println("Found peer name ", strings.Split(line, "=")[1])
 			peername = strings.TrimSpace(strings.Split(line, "=")[1])
@@ -127,6 +128,7 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 			log.Println("Error parsing lasthandshake:", err)
 			lasthandshake = 0
 		}
+		// log.Println(peerNames)
 		user_name := peerNames[publicKey].peerName
 		log.Println("Checking key ", publicKey)
 		if user_name == "" {
